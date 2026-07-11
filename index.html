@@ -3,308 +3,895 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Khushi's Birthday 🎂</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
-
+<title>Khushi & Me — Observatory</title>
+ 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+ 
 <style>
-* {
-  box-sizing: border-box;
-  font-family: 'Baloo 2', cursive;
+/* =========================================================
+   TOKENS — Observatory / night-sky theme
+   ========================================================= */
+:root{
+  --bg: #06051a;
+  --bg-alt: #0d0b2b;
+  --panel: #13112f;
+  --panel-2: #191640;
+  --panel-border: rgba(240,235,255,0.09);
+  --ink: #F2EEFF;
+  --ink-dim: #9C93C9;
+  --gold: #F0C36B;
+  --gold-dim: rgba(240,195,107,0.25);
+  --scorpio: #E36FA0;
+  --scorpio-dim: rgba(227,111,160,0.18);
+  --virgo: #7FBF9E;
+  --virgo-dim: rgba(127,191,158,0.18);
+  --shadow: 0 24px 60px rgba(0,0,0,0.55);
+  --radius: 22px;
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
-
-body {
-  margin: 0;
-  min-height: 100svh;
-  background: linear-gradient(180deg, #f7c6df, #d9d6ff);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+ 
+[data-theme="light"]{
+  --bg: #FBF6EC;
+  --bg-alt: #F3E9D6;
+  --panel: #FFFFFF;
+  --panel-2: #FFFDF8;
+  --panel-border: rgba(43,36,64,0.09);
+  --ink: #2B2440;
+  --ink-dim: #7A7196;
+  --gold: #D69A34;
+  --gold-dim: rgba(214,154,52,0.18);
+  --scorpio: #C6497C;
+  --scorpio-dim: rgba(198,73,124,0.14);
+  --virgo: #4F8F68;
+  --virgo-dim: rgba(79,143,104,0.14);
+  --shadow: 0 20px 44px rgba(60,40,20,0.12);
+}
+ 
+*{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+body{
+  margin:0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--bg), var(--bg-alt) 60%, var(--bg));
+  transition: background .5s ease, color .5s ease;
   overflow-x: hidden;
-  position: relative;
 }
-
-/* ================= CLOUDS (BACKGROUND ONLY) ================= */
-.cloud {
-  position: absolute;
-  background: #fff;
-  border-radius: 100px;
-  opacity: 0.7;
-  z-index: 0;
-  pointer-events: none;
+::selection{ background: var(--gold); color: #1a1330; }
+:focus-visible{ outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
+ 
+#star-canvas{ position: fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+#fx-canvas{ position: fixed; inset:0; width:100%; height:100%; z-index:60; pointer-events:none; }
+ 
+.wrap{ position:relative; z-index:2; max-width: 780px; margin:0 auto; padding: 20px 18px 90px; }
+ 
+/* ---------- topbar ---------- */
+.topbar{ display:flex; align-items:center; justify-content:space-between; padding:8px 4px 22px; }
+.brand{ font-family: var(--font-mono); font-size:12px; letter-spacing:.06em; color: var(--ink-dim); display:flex; align-items:center; gap:8px; }
+.brand b{ color: var(--scorpio); }
+.dot{ width:7px;height:7px;border-radius:50%; background: var(--gold); box-shadow:0 0 0 4px var(--gold-dim); animation: blink 2.4s ease-in-out infinite; }
+@keyframes blink{ 0%,100%{opacity:1} 50%{opacity:.3} }
+.theme-toggle{ border:1px solid var(--panel-border); background: var(--panel); color: var(--ink); font-family: var(--font-mono); font-size:12px; padding:8px 14px; border-radius:999px; cursor:pointer; box-shadow: var(--shadow); }
+.theme-toggle:hover{ transform: translateY(-1px); }
+ 
+/* ---------- hero + orbit ---------- */
+.hero{ text-align:center; padding: 10px 0 20px; }
+.eyebrow{ font-family: var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color: var(--gold); margin-bottom:10px; }
+.hero h1{ font-family: var(--font-display); font-weight:600; font-size: clamp(32px,8vw,52px); line-height:1.05; margin:0 0 8px; }
+.hero h1 em{ font-style:italic; color: var(--scorpio); font-weight:500; }
+.hero p.sub{ font-size:14px; color: var(--ink-dim); margin:0 auto; max-width: 440px; }
+ 
+.orbit-stage{ position:relative; width:230px; height:230px; margin: 30px auto 10px; }
+.orbit-track{ position:absolute; inset:0; border:1px dashed var(--panel-border); border-radius:50%; }
+.orbit-track.inner{ inset: 34px; }
+.orbit-core{
+  position:absolute; top:50%; left:50%; width:56px; height:56px; margin:-28px 0 0 -28px;
+  border-radius:50%;
+  background: radial-gradient(circle at 35% 30%, var(--gold), var(--scorpio) 70%);
+  box-shadow: 0 0 40px var(--gold-dim), 0 0 70px var(--scorpio-dim);
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--font-mono); font-size:10px; font-weight:700; color:#1a1330;
 }
-.cloud::before,
-.cloud::after {
-  content: '';
-  position: absolute;
-  background: #fff;
-  border-radius: 50%;
+.orbit-body{ position:absolute; top:50%; left:50%; width:1px; height:1px; animation: spin 20s linear infinite; }
+.orbit-body.b{ animation-duration: 26s; animation-direction: reverse; }
+.orbit-dot{
+  position:absolute; top:-104px; left:-22px; width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:20px;
+  animation: counterspin 20s linear infinite;
+  box-shadow: var(--shadow);
 }
-.cloud::before {
-  width: 60%;
-  height: 60%;
-  top: -30%;
-  left: 10%;
+.orbit-body.b .orbit-dot{ animation-duration: 26s; top:-78px; }
+.orbit-dot.scorpio{ background: var(--scorpio-dim); border: 1px solid var(--scorpio); }
+.orbit-dot.virgo{ background: var(--virgo-dim); border: 1px solid var(--virgo); }
+@keyframes spin{ from{ transform: rotate(0deg);} to{ transform: rotate(360deg);} }
+@keyframes counterspin{ from{ transform: rotate(0deg);} to{ transform: rotate(-360deg);} }
+@media (prefers-reduced-motion: reduce){ .orbit-body, .orbit-dot{ animation: none; } }
+ 
+.badge-row{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+.badge{ font-family: var(--font-mono); font-size:11px; background: var(--panel); border:1px solid var(--panel-border); padding:6px 12px; border-radius:999px; box-shadow: var(--shadow); }
+.badge.scorpio{ color: var(--scorpio); }
+.badge.virgo{ color: var(--virgo); }
+ 
+/* countdown */
+.timer{ display:grid; grid-template-columns: repeat(4,1fr); gap:10px; margin: 26px 0 4px; }
+.time-box{ background: var(--panel); border:1px solid var(--panel-border); border-radius:18px; padding:14px 4px; text-align:center; box-shadow: var(--shadow); }
+.time-box h3{ font-family: var(--font-mono); font-weight:700; font-size: clamp(20px,6vw,28px); margin:0; color: var(--scorpio); font-variant-numeric: tabular-nums; }
+.time-box span{ font-family: var(--font-mono); font-size:9.5px; color: var(--ink-dim); letter-spacing:.08em; }
+ 
+/* ---------- section shell ---------- */
+section.block{ margin-top: 48px; }
+.block-head{ display:flex; align-items:baseline; gap:10px; margin-bottom:6px; }
+.block-head .tag{ font-family: var(--font-mono); font-size:11px; color: var(--gold); background: var(--gold-dim); padding:3px 9px; border-radius:6px; }
+.block-head h2{ font-family: var(--font-display); font-size:22px; font-weight:600; margin:0; }
+.block-sub{ font-size:13px; color: var(--ink-dim); margin: 4px 0 18px; }
+.card{ background: var(--panel); border:1px solid var(--panel-border); border-radius: var(--radius); padding:20px; box-shadow: var(--shadow); }
+ 
+/* ---------- compatibility console ---------- */
+.sign-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:16px; }
+@media (max-width: 520px){ .sign-grid{ grid-template-columns: 1fr; } }
+.sign-card{ border-radius:20px; padding:18px; box-shadow: var(--shadow); border:1px solid var(--panel-border); position:relative; overflow:hidden; }
+.sign-card.scorpio{ background: linear-gradient(160deg, var(--panel), var(--scorpio-dim)); }
+.sign-card.virgo{ background: linear-gradient(160deg, var(--panel), var(--virgo-dim)); }
+.sign-card .glyph{ font-size:30px; }
+.sign-card h3{ font-family: var(--font-display); font-size:19px; margin: 6px 0 0; }
+.sign-card .meta{ font-family: var(--font-mono); font-size:10.5px; color: var(--ink-dim); margin-top:4px; line-height:1.6; }
+.sign-card .meta b{ color: var(--ink); }
+.age-ticker{ margin-top:12px; font-family: var(--font-mono); font-size: 12.5px; background: rgba(0,0,0,0.15); border-radius:12px; padding:10px 12px; }
+[data-theme="light"] .age-ticker{ background: rgba(0,0,0,0.04); }
+.age-ticker .big{ font-size:15px; font-weight:700; }
+ 
+.combined-stat{
+  text-align:center; margin: 4px 0 18px;
+  font-family: var(--font-mono); font-size:12px; color: var(--ink-dim);
 }
-.cloud::after {
-  width: 50%;
-  height: 50%;
-  top: -20%;
-  right: 15%;
-}
-.cloud.one {
-  width: 240px;
-  height: 80px;
-  top: 5%;
-  left: -60px;
-}
-.cloud.two {
-  width: 260px;
-  height: 90px;
-  top: 12%;
-  right: -80px;
-}
-
-/* ================= MAIN CARD ================= */
-.container {
-  width: 100%;
-  max-width: 420px;
-  margin: 16px;
-  background: linear-gradient(180deg, #fef2f8, #efeaff);
-  border-radius: 32px;
-  box-shadow: 0 40px 80px rgba(0,0,0,0.15);
-  padding: 24px 20px 28px;
-  position: relative;
-  z-index: 2;
-}
-
-/* ================= HEADER ================= */
-.header {
-  text-align: center;
-  margin-bottom: 18px;
-}
-.header h1 {
-  font-size: 26px;
-  color: #ff5fa2;
-  margin: 0;
-}
-.header span {
-  display: inline-block;
-  background: #ffd9ea;
-  padding: 6px 14px;
-  border-radius: 999px;
-  margin-top: 6px;
-  font-size: 13px;
-  color: #7b3f5c;
-}
-
-/* ================= SUBTEXT ================= */
-.subtext {
-  text-align: center;
-  margin-bottom: 20px;
-}
-.subtext h2 {
-  margin: 0;
-  font-size: 18px;
-  color: #6a63c9;
-}
-.subtext p {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: #7c7c9a;
-}
-
-/* ================= TIMER ================= */
-.timer {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin-bottom: 20px;
-}
-.time-box {
-  background: #fff;
-  border-radius: 18px;
-  padding: 14px 6px;
-  text-align: center;
-  box-shadow: 0 14px 28px rgba(0,0,0,0.08);
-}
-.time-box h3 {
-  font-size: 28px;
-  margin: 0;
-  color: #ff5fa2;
-}
-.time-box span {
-  font-size: 11px;
-  color: #8a8aa3;
-}
-
-/* ================= CARDS ================= */
-.card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 16px;
-  box-shadow: 0 14px 28px rgba(0,0,0,0.08);
-  margin-bottom: 14px;
-}
-.card h3 {
-  margin: 0 0 8px;
-  font-size: 14px;
-  color: #6a63c9;
-}
-.card p {
-  margin: 0;
-  font-size: 12px;
-  color: #6f6f8a;
-  line-height: 1.5;
-}
-.progress-item {
-  font-size: 12px;
-  margin: 8px 0;
-  color: #555;
-}
-
-/* ================= PROGRESS BAR ================= */
-.meter {
-  height: 10px;
-  border-radius: 999px;
-  background: #f1efff;
-  overflow: hidden;
-}
-.meter-fill {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, #ff5fa2, #9a7dff);
-}
-
-/* ================= FOOTER ================= */
-.footer {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 11px;
-  color: #7b7b99;
-}
-
-/* ================= MOBILE CLOUD SAFETY ================= */
-@media (max-width: 480px) {
-  .cloud {
-    opacity: 0.25;
-    transform: scale(0.7);
-  }
-}
-@media (max-width: 360px) {
-  .cloud {
-    display: none;
-  }
-}
+.combined-stat .num{ font-family: var(--font-display); font-size: 30px; color: var(--gold); display:block; margin-bottom:2px; }
+ 
+.synastry{ margin-top: 6px; }
+.syn-row{ margin-bottom: 14px; }
+.syn-row .lbl{ display:flex; justify-content:space-between; font-family: var(--font-mono); font-size:11.5px; margin-bottom:6px; }
+.syn-row .lbl b{ color: var(--gold); }
+.syn-bar{ height:9px; border-radius:999px; background: rgba(255,255,255,0.06); overflow:hidden; }
+[data-theme="light"] .syn-bar{ background: rgba(0,0,0,0.06); }
+.syn-fill{ height:100%; border-radius:999px; background: linear-gradient(90deg, var(--virgo), var(--gold), var(--scorpio)); }
+.syn-note{ font-size:12.5px; color: var(--ink-dim); margin-top:6px; line-height:1.5; }
+ 
+.mini-stats{ display:grid; grid-template-columns: repeat(2,1fr); gap:10px; margin-top:16px; }
+@media (max-width:480px){ .mini-stats{ grid-template-columns: 1fr; } }
+.mini-stat{ background: rgba(255,255,255,0.03); border:1px solid var(--panel-border); border-radius:14px; padding:12px; }
+[data-theme="light"] .mini-stat{ background: rgba(0,0,0,0.02); }
+.mini-stat .k{ font-family: var(--font-mono); font-size:10px; color: var(--ink-dim); text-transform:uppercase; letter-spacing:.06em; }
+.mini-stat .v{ font-family: var(--font-display); font-size:16px; margin-top:2px; }
+ 
+/* ---------- neural love network ---------- */
+.network-card{ padding: 22px 18px 16px; }
+.sliders{ display:grid; grid-template-columns:1fr; gap:12px; margin-bottom:14px; }
+.slider-row{ display:grid; grid-template-columns: 84px 1fr 40px; align-items:center; gap:10px; font-family: var(--font-mono); font-size:11px; color: var(--ink-dim); }
+.slider-row output{ text-align:right; color: var(--ink); font-weight:600; }
+input[type="range"]{ -webkit-appearance:none; appearance:none; height:5px; border-radius:999px; background: linear-gradient(90deg, var(--virgo), var(--scorpio)); outline:none; }
+input[type="range"]::-webkit-slider-thumb{ -webkit-appearance:none; width:16px;height:16px; border-radius:50%; background: var(--panel); border:3px solid var(--gold); cursor:pointer; }
+input[type="range"]::-moz-range-thumb{ width:16px;height:16px; border-radius:50%; background: var(--panel); border:3px solid var(--gold); cursor:pointer; }
+.net-svg{ width:100%; height:auto; display:block; }
+.node-label{ font-family: var(--font-mono); font-size:8.5px; fill: var(--ink-dim); }
+.output-label{ font-family: var(--font-mono); font-weight:700; font-size:15px; fill:#1a1330; }
+.log-line{ font-family: var(--font-mono); font-size:11px; color: var(--ink-dim); margin-top:8px; min-height:16px; }
+.log-line b{ color: var(--gold); }
+ 
+/* ---------- memory log ---------- */
+.memory-list{ display:flex; flex-direction:column; gap:12px; }
+.memory{ display:grid; grid-template-columns: 60px 1fr; gap:14px; background: var(--panel); border:1px solid var(--panel-border); border-radius:16px; padding:14px; box-shadow: var(--shadow); position:relative; }
+.memory .idx{ font-family: var(--font-mono); font-size:11px; color: var(--gold); align-self:start; }
+.memory .body input.mdate{ font-family: var(--font-mono); font-size:10px; color: var(--ink-dim); border:none; background:transparent; width:100%; margin-bottom:4px; padding:0; }
+.memory .body [contenteditable]{ font-size:13.5px; line-height:1.5; outline:none; }
+.memory .del{ position:absolute; top:10px; right:12px; border:none; background:none; cursor:pointer; color: var(--ink-dim); font-size:13px; }
+.memory .del:hover{ color: var(--scorpio); }
+.add-row{ display:flex; justify-content:center; margin-top:14px; }
+ 
+/* ---------- buttons ---------- */
+.btn{ font-family: var(--font-mono); font-size:12px; letter-spacing:.02em; padding:10px 18px; border-radius:999px; border:1px solid var(--panel-border); background: var(--panel); color: var(--ink); cursor:pointer; box-shadow: var(--shadow); }
+.btn:hover{ transform: translateY(-1px); }
+.btn.primary{ background: linear-gradient(120deg, var(--scorpio), var(--gold)); color:#1a1330; border:none; font-weight:600; }
+ 
+/* ---------- notes ---------- */
+.notes-card{ text-align:center; }
+.note-display{ font-family: var(--font-display); font-style:italic; font-size:18px; min-height:70px; display:flex; align-items:center; justify-content:center; padding:6px 10px; transition: opacity .25s ease; }
+.notes-actions{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:6px; }
+.note-add{ display:flex; gap:8px; margin-top:16px; }
+.note-add input{ flex:1; font-family: var(--font-body); font-size:13px; padding:10px 12px; border-radius:12px; border:1px solid var(--panel-border); background: var(--bg); color: var(--ink); }
+ 
+/* ---------- quiz ---------- */
+.quiz-q{ margin-bottom:16px; }
+.quiz-q p{ font-weight:600; font-size:14px; margin:0 0 8px; }
+.quiz-opts{ display:grid; gap:8px; }
+.quiz-opt{ text-align:left; font-family: var(--font-body); font-size:13px; padding:10px 12px; border-radius:12px; border:1px solid var(--panel-border); background: var(--bg); color: var(--ink); cursor:pointer; }
+.quiz-opt.correct{ border-color: var(--scorpio); background: var(--scorpio-dim); }
+.quiz-opt.wrong{ opacity:.5; }
+.quiz-result{ font-family: var(--font-mono); font-size:13px; margin-top:10px; color: var(--gold); }
+ 
+/* ---------- secret ---------- */
+.secret-card{ text-align:center; }
+.secret-form{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+.secret-form input{ font-family: var(--font-mono); text-transform:uppercase; letter-spacing:.08em; font-size:13px; padding:10px 12px; border-radius:12px; border:1px solid var(--panel-border); background: var(--bg); color: var(--ink); width:180px; }
+.hint{ font-size:11px; color: var(--ink-dim); margin-top:8px; font-family: var(--font-mono); }
+.secret-reveal{ display:none; margin-top:18px; font-family: var(--font-display); font-style:italic; font-size:19px; line-height:1.5; color: var(--scorpio); }
+.secret-reveal.show{ display:block; animation: fadeUp .6s ease; }
+@keyframes fadeUp{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+.shake{ animation: shake .4s ease; }
+@keyframes shake{ 10%,90%{transform:translateX(-2px);} 20%,80%{transform:translateX(3px);} 30%,50%,70%{transform:translateX(-5px);} 40%,60%{transform:translateX(5px);} }
+ 
+footer{ text-align:center; margin-top:54px; font-family: var(--font-mono); font-size:11px; color: var(--ink-dim); }
+ 
+@media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } .dot{ animation:none; } }
 </style>
 </head>
-
-<body>
-
-<!-- Decorative clouds -->
-<div class="cloud one"></div>
-<div class="cloud two"></div>
-
-<div class="container">
-
-  <div class="header">
-    <h1>🎂 Khushi’s Birthday 🎂</h1>
-    <span>October 27</span>
+<body data-theme="dark">
+ 
+<canvas id="star-canvas" aria-hidden="true"></canvas>
+<canvas id="fx-canvas" aria-hidden="true"></canvas>
+ 
+<div class="wrap">
+ 
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> khushi<b>&amp;</b>me — observatory</div>
+    <button class="theme-toggle" id="themeToggle" type="button">☀️ daytime</button>
   </div>
-
-  <div class="subtext">
-    <h2>Countdown to my Kaju Katli's Day</h2>
-  </div>
-
-  <div class="timer">
-    <div class="time-box">
-      <h3 id="days">0</h3>
-      <span>DAYS</span>
+ 
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow">two charts, one sky</div>
+    <h1>Khushi's <em>Birthday</em> 🎂</h1>
+    <p class="sub">October 27 · counting down to my favourite day of the year, one second at a time.</p>
+ 
+    <div class="orbit-stage" aria-hidden="true">
+      <div class="orbit-track"></div>
+      <div class="orbit-track inner"></div>
+      <div class="orbit-core">US</div>
+      <div class="orbit-body"><div class="orbit-dot scorpio">♏</div></div>
+      <div class="orbit-body b"><div class="orbit-dot virgo">♍</div></div>
     </div>
-    <div class="time-box">
-      <h3 id="hours">0</h3>
-      <span>HOURS</span>
+ 
+    <div class="badge-row">
+      <span class="badge scorpio">♏ Khushi — Scorpio</span>
+      <span class="badge virgo">♍ Harshil — Virgo</span>
     </div>
-    <div class="time-box">
-      <h3 id="minutes">0</h3>
-      <span>MINUTES</span>
+ 
+    <div class="timer">
+      <div class="time-box"><h3 id="days">00</h3><span>DAYS</span></div>
+      <div class="time-box"><h3 id="hours">00</h3><span>HRS</span></div>
+      <div class="time-box"><h3 id="minutes">00</h3><span>MIN</span></div>
+      <div class="time-box"><h3 id="seconds">00</h3><span>SEC</span></div>
     </div>
-    <div class="time-box">
-      <h3 id="seconds">0</h3>
-      <span>SECONDS</span>
+  </section>
+ 
+  <!-- COMPATIBILITY CONSOLE -->
+  <section class="block">
+    <div class="block-head"><span class="tag">synastry engine</span><h2>The Compatibility Console</h2></div>
+    <p class="block-sub">Real birth data, actually computed — sun signs, elements, a running age ticker, moon phase at birth, and a synastry read on the two of us.</p>
+ 
+    <div class="sign-grid">
+      <div class="sign-card scorpio">
+        <div class="glyph">♏</div>
+        <h3>Khushi</h3>
+        <div class="meta">
+          <b>Oct 27, 2001</b> · Scorpio<br>
+          Element: <b>Water</b> · Modality: <b>Fixed</b><br>
+          Ruler: <b>Pluto &amp; Mars</b><br>
+          Moon phase at birth: <b id="moonKhushi">—</b>
+        </div>
+        <div class="age-ticker">
+          <div class="big" id="ageKhushiBig">— years old</div>
+          <div id="ageKhushiTick">calculating…</div>
+        </div>
+      </div>
+ 
+      <div class="sign-card virgo">
+        <div class="glyph">♍</div>
+        <h3>Harshil</h3>
+        <div class="meta">
+          <b>Sep 13, 2001</b> · Virgo<br>
+          Element: <b>Earth</b> · Modality: <b>Mutable</b><br>
+          Ruler: <b>Mercury</b><br>
+          Moon phase at birth: <b id="moonMe">—</b>
+        </div>
+        <div class="age-ticker">
+          <div class="big" id="ageMeBig">— years old</div>
+          <div id="ageMeTick">calculating…</div>
+        </div>
+      </div>
     </div>
-  </div>
-
-  <div class="card">
-    <h3>📅 Promise</h3>
-    <p>
-      This countdown will always stay every year,
-      every birthday.
-    </p>
-  </div>
-
-  <div class="card">
-    <h3>✨ Details</h3>
-    <div class="progress-item">♏ <strong>Zodiac Sign:</strong> Scorpio</div>
-    <div class="progress-item" id="thought">💭 Loading thought...</div>
-    <div class="meter">
-      <div class="meter-fill"></div>
+ 
+    <div class="combined-stat">
+      <span class="num" id="combinedDays">—</span>
+      combined days alive, on the same planet, at the same time
     </div>
-  </div>
-
-  <div class="footer">
-    Counting every second ✨
-  </div>
-
+ 
+    <div class="card synastry">
+      <div class="syn-row">
+        <div class="lbl"><span>Communication</span><b>78%</b></div>
+        <div class="syn-bar"><div class="syn-fill" style="width:78%"></div></div>
+        <p class="syn-note">Mercury-ruled Virgo thinks out loud in specifics; Scorpio listens for what's underneath the words. Different styles, same goal — it just takes patience to translate.</p>
+      </div>
+      <div class="syn-row">
+        <div class="lbl"><span>Emotional Depth</span><b>92%</b></div>
+        <div class="syn-bar"><div class="syn-fill" style="width:92%"></div></div>
+        <p class="syn-note">Earth and Water is the classic "fertile ground" pairing — Virgo gives Scorpio's intensity somewhere steady to land, Scorpio gives Virgo permission to feel instead of fix.</p>
+      </div>
+      <div class="syn-row">
+        <div class="lbl"><span>Shared Values</span><b>85%</b></div>
+        <div class="syn-bar"><div class="syn-fill" style="width:85%"></div></div>
+        <p class="syn-note">Both signs are loyal, private about what matters, and allergic to flakiness. Neither one does anything halfway.</p>
+      </div>
+      <div class="syn-row">
+        <div class="lbl"><span>Passion &amp; Chemistry</span><b>90%</b></div>
+        <div class="syn-bar"><div class="syn-fill" style="width:90%"></div></div>
+        <p class="syn-note">Fixed meets Mutable: Scorpio holds the intensity steady, Virgo adapts around it. It tends to read as effortless from the outside.</p>
+      </div>
+      <div class="syn-row">
+        <div class="lbl"><span>Growth Potential</span><b>88%</b></div>
+        <div class="syn-bar"><div class="syn-fill" style="width:88%"></div></div>
+        <p class="syn-note">The friction points are real — Virgo's critique reflex vs. Scorpio's guardedness — but both signs are famous for doing the work rather than walking away from it.</p>
+      </div>
+    </div>
+ 
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="k">Chinese Zodiac</div><div class="v" id="chineseZodiac">—</div></div>
+      <div class="mini-stat"><div class="k">Life Path Numbers</div><div class="v" id="lifePaths">—</div></div>
+    </div>
+  </section>
+ 
+  <!-- NEURAL LOVE NETWORK -->
+  <section class="block">
+    <div class="block-head"><span class="tag">signature model</span><h2>Two Minds, One Model</h2></div>
+    <p class="block-sub">Move the sliders — the network re-runs inference in real time. Spoiler: the output layer never changes.</p>
+    <div class="card network-card">
+      <div class="sliders">
+        <div class="slider-row"><label for="s-kind">kindness</label><input type="range" id="s-kind" min="0" max="100" value="97"><output id="o-kind">97</output></div>
+        <div class="slider-row"><label for="s-humor">humor</label><input type="range" id="s-humor" min="0" max="100" value="88"><output id="o-humor">88</output></div>
+        <div class="slider-row"><label for="s-cute">cuteness</label><input type="range" id="s-cute" min="0" max="100" value="99"><output id="o-cute">99</output></div>
+        <div class="slider-row"><label for="s-pat">patience</label><input type="range" id="s-pat" min="0" max="100" value="80"><output id="o-pat">80</output></div>
+      </div>
+      <svg class="net-svg" id="netSvg" viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg">
+        <g id="edgesLayer"></g>
+        <g id="inputLayer"></g>
+        <g id="hiddenLayer"></g>
+        <g id="outputLayer">
+          <circle cx="540" cy="130" r="34" fill="url(#outGrad)" />
+          <text x="540" y="127" text-anchor="middle" class="output-label">100%</text>
+          <text x="540" y="142" text-anchor="middle" class="node-label" fill="#1a1330">US</text>
+        </g>
+        <defs>
+          <radialGradient id="outGrad" cx="35%" cy="35%" r="75%">
+            <stop offset="0%" stop-color="var(--gold)"/>
+            <stop offset="100%" stop-color="var(--scorpio)"/>
+          </radialGradient>
+        </defs>
+      </svg>
+      <div class="log-line" id="netLog">&gt; model.predict(us) <b>== "yes, always"</b></div>
+    </div>
+  </section>
+ 
+  <!-- MEMORIES -->
+  <section class="block">
+    <div class="block-head"><span class="tag">timeline</span><h2>Memory Log</h2></div>
+    <p class="block-sub">Editable — click any line to rewrite it, or add a new entry. Saved on this device.</p>
+    <div class="memory-list" id="memoryList"></div>
+    <div class="add-row"><button class="btn primary" id="addMemory" type="button">+ add memory</button></div>
+  </section>
+ 
+  <!-- AI NOTES -->
+  <section class="block">
+    <div class="block-head"><span class="tag">generator</span><h2>Love Note Inference</h2></div>
+    <p class="block-sub">Click run to sample a random note from the collection — or teach it a new one.</p>
+    <div class="card notes-card">
+      <div class="note-display" id="noteDisplay">💭 "Some people quietly brighten every room they enter."</div>
+      <div class="notes-actions"><button class="btn primary" id="runNote" type="button">▶ run inference</button></div>
+      <div class="note-add">
+        <input type="text" id="noteInput" placeholder="add your own note to the dataset...">
+        <button class="btn" id="addNote" type="button">add</button>
+      </div>
+    </div>
+  </section>
+ 
+  <!-- QUIZ -->
+  <section class="block">
+    <div class="block-head"><span class="tag">benchmark</span><h2>How Well Do I Know You?</h2></div>
+    <p class="block-sub">A tiny quiz — edit the questions in the code to make it really yours.</p>
+    <div class="card" id="quizCard"></div>
+  </section>
+ 
+  <!-- SECRET -->
+  <section class="block">
+    <div class="block-head"><span class="tag">locked</span><h2>One Last Thing</h2></div>
+    <p class="block-sub">There's a message that only unlocks with the right word.</p>
+    <div class="card secret-card">
+      <div class="secret-form">
+        <input type="text" id="secretInput" placeholder="ENTER CODE" maxlength="20">
+        <button class="btn primary" id="secretBtn" type="button">unlock</button>
+      </div>
+      <div class="hint">hint: what I call you when no one's listening</div>
+      <div class="secret-reveal" id="secretReveal"></div>
+    </div>
+  </section>
+ 
+  <footer>built with 🤖 + ❤️ · this page will run every year, for every birthday</footer>
 </div>
-
+ 
 <script>
-/* IST TIME HANDLING */
-const IST_OFFSET = 330;
-
-function getISTNow() {
-  const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  return new Date(utc + IST_OFFSET * 60000);
-}
-
-function updateCountdown() {
-  const istNow = getISTNow();
-  let year = istNow.getFullYear();
-
-  let birthdayIST = new Date(Date.UTC(year, 9, 27, -5, -30, 0));
-  if (istNow > birthdayIST) {
-    birthdayIST = new Date(Date.UTC(year + 1, 9, 27, -5, -30, 0));
+/* =========================================================
+   THEME TOGGLE
+   ========================================================= */
+(function themeInit(){
+  const body = document.body;
+  const btn = document.getElementById('themeToggle');
+  let saved = null;
+  try{ saved = localStorage.getItem('khushi_theme'); }catch(e){}
+  if(saved === 'light'){ body.setAttribute('data-theme','light'); btn.textContent = '🌙 night sky'; }
+  btn.addEventListener('click', () => {
+    const isLight = body.getAttribute('data-theme') === 'light';
+    if(isLight){ body.setAttribute('data-theme','dark'); btn.textContent = '☀️ daytime'; }
+    else{ body.setAttribute('data-theme','light'); btn.textContent = '🌙 night sky'; }
+    try{ localStorage.setItem('khushi_theme', isLight ? 'dark' : 'light'); }catch(e){}
+  });
+})();
+ 
+/* =========================================================
+   STARFIELD BACKGROUND
+   ========================================================= */
+(function starfield(){
+  const canvas = document.getElementById('star-canvas');
+  const ctx = canvas.getContext('2d');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let w, h, stars = [], shooting = [];
+ 
+  function resize(){ w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+ 
+  for(let i=0;i<120;i++){
+    stars.push({ x: Math.random()*w, y: Math.random()*h, r: Math.random()*1.4+0.3,
+      phase: Math.random()*Math.PI*2, speed: 0.01+Math.random()*0.02 });
   }
-
-  const diff = birthdayIST - istNow;
-
-  document.getElementById("days").textContent =
-    Math.floor(diff / (1000 * 60 * 60 * 24));
-  document.getElementById("hours").textContent =
-    Math.floor((diff / (1000 * 60 * 60)) % 24);
-  document.getElementById("minutes").textContent =
-    Math.floor((diff / (1000 * 60)) % 60);
-  document.getElementById("seconds").textContent =
-    Math.floor((diff / 1000) % 60);
+  function maybeShootingStar(){
+    if(Math.random() < 0.004){
+      shooting.push({ x: Math.random()*w*0.6, y: Math.random()*h*0.3, vx: 6+Math.random()*4, vy: 3+Math.random()*2, life: 1 });
+    }
+  }
+  function frame(){
+    ctx.clearRect(0,0,w,h);
+    stars.forEach(s=>{
+      if(!reduced) s.phase += s.speed;
+      const a = 0.4 + 0.6*Math.abs(Math.sin(s.phase));
+      ctx.globalAlpha = a;
+      ctx.fillStyle = '#F2EEFF';
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    if(!reduced){
+      maybeShootingStar();
+      shooting.forEach(sh=>{
+        ctx.strokeStyle = 'rgba(240,195,107,' + sh.life + ')';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sh.x, sh.y);
+        ctx.lineTo(sh.x - sh.vx*6, sh.y - sh.vy*6);
+        ctx.stroke();
+        sh.x += sh.vx; sh.y += sh.vy; sh.life -= 0.02;
+      });
+      shooting = shooting.filter(sh => sh.life > 0);
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+ 
+/* =========================================================
+   FX CANVAS — confetti-ish celestial burst
+   ========================================================= */
+function launchBurst(duration){
+  duration = duration || 2500;
+  const canvas = document.getElementById('fx-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const colors = ['#E36FA0','#7FBF9E','#F0C36B','#F2EEFF'];
+  let pieces = [];
+  for(let i=0;i<130;i++){
+    pieces.push({
+      x: Math.random()*canvas.width, y: -20 - Math.random()*canvas.height*0.5,
+      w: 5+Math.random()*5, h: 7+Math.random()*9,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      speed: 2+Math.random()*3, rot: Math.random()*360, rotSpeed: (Math.random()-0.5)*10,
+      drift: (Math.random()-0.5)*2
+    });
+  }
+  const start = performance.now();
+  function frame(now){
+    const elapsed = now - start;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      p.y += p.speed; p.x += p.drift; p.rot += p.rotSpeed;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+    });
+    if(elapsed < duration) requestAnimationFrame(frame);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  requestAnimationFrame(frame);
 }
-
-/* RANDOM THOUGHT */
-const thoughts = [
-  "Some people quietly brighten every space they enter.",
-  "October souls are calm and observant.",
-  "Strength doesn’t need to be loud.",
-  "Certain people leave calm behind them.",
-  "Thoughtful presence is rare."
-];
-
-document.getElementById("thought").innerHTML =
-  "💭 <strong>Thought:</strong> " +
-  thoughts[Math.floor(Math.random() * thoughts.length)];
-
-updateCountdown();
-setInterval(updateCountdown, 1000);
+ 
+/* =========================================================
+   COUNTDOWN (IST, Oct 27)
+   ========================================================= */
+(function countdown(){
+  const IST_OFFSET_MIN = 330;
+  function nowIST(){
+    const now = new Date();
+    const utcMs = now.getTime() + now.getTimezoneOffset()*60000;
+    return new Date(utcMs + IST_OFFSET_MIN*60000);
+  }
+  function tick(){
+    const istNow = nowIST();
+    const y = istNow.getFullYear();
+    let target = new Date(Date.UTC(y, 9, 26, 18, 30, 0)); // Oct 27 00:00 IST
+    const istTarget = new Date(target.getTime() + IST_OFFSET_MIN*60000);
+    if(istNow.getTime() > istTarget.getTime()) target = new Date(Date.UTC(y+1, 9, 26, 18, 30, 0));
+    const diff = target.getTime() - (istNow.getTime() - IST_OFFSET_MIN*60000);
+    const d = Math.max(0, Math.floor(diff/(1000*60*60*24)));
+    const h = Math.max(0, Math.floor((diff/(1000*60*60))%24));
+    const m = Math.max(0, Math.floor((diff/(1000*60))%60));
+    const s = Math.max(0, Math.floor((diff/1000)%60));
+    document.getElementById('days').textContent = String(d).padStart(2,'0');
+    document.getElementById('hours').textContent = String(h).padStart(2,'0');
+    document.getElementById('minutes').textContent = String(m).padStart(2,'0');
+    document.getElementById('seconds').textContent = String(s).padStart(2,'0');
+    if(diff <= 0) launchBurst(4000);
+  }
+  tick(); setInterval(tick, 1000);
+})();
+ 
+/* =========================================================
+   COMPATIBILITY CONSOLE — real computed astrology
+   ========================================================= */
+(function compatibility(){
+  // Fixed birth data (edit here if needed)
+  const KHUSHI_BIRTH = new Date(2001, 9, 27, 0, 0, 0);  // Oct 27, 2001
+  const ME_BIRTH      = new Date(2001, 8, 13, 0, 0, 0); // Sep 13, 2001
+ 
+  function ageParts(birth, now){
+    let y = now.getFullYear() - birth.getFullYear();
+    let m = now.getMonth() - birth.getMonth();
+    let d = now.getDate() - birth.getDate();
+    let h = now.getHours() - birth.getHours();
+    let mi = now.getMinutes() - birth.getMinutes();
+    let s = now.getSeconds() - birth.getSeconds();
+    if(s < 0){ s += 60; mi--; }
+    if(mi < 0){ mi += 60; h--; }
+    if(h < 0){ h += 24; d--; }
+    if(d < 0){ const prevMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate(); d += prevMonthDays; m--; }
+    if(m < 0){ m += 12; y--; }
+    return { y, m, d, h, mi, s };
+  }
+ 
+  function totalDays(birth, now){ return Math.floor((now - birth) / 86400000); }
+ 
+  // Moon phase via synodic-month approximation from a known new moon reference.
+  function moonPhase(date){
+    const synodic = 29.53058867;
+    const refNewMoon = Date.UTC(2000, 0, 6, 18, 14, 0);
+    const diffDays = (date.getTime() - refNewMoon) / 86400000;
+    const age = ((diffDays % synodic) + synodic) % synodic;
+    const frac = age / synodic;
+    const phases = [
+      { max: 0.03, name: 'New Moon', emoji: '🌑' },
+      { max: 0.22, name: 'Waxing Crescent', emoji: '🌒' },
+      { max: 0.28, name: 'First Quarter', emoji: '🌓' },
+      { max: 0.47, name: 'Waxing Gibbous', emoji: '🌔' },
+      { max: 0.53, name: 'Full Moon', emoji: '🌕' },
+      { max: 0.72, name: 'Waning Gibbous', emoji: '🌖' },
+      { max: 0.78, name: 'Last Quarter', emoji: '🌗' },
+      { max: 0.97, name: 'Waning Crescent', emoji: '🌘' },
+      { max: 1.01, name: 'New Moon', emoji: '🌑' }
+    ];
+    const p = phases.find(ph => frac <= ph.max);
+    return p.emoji + ' ' + p.name;
+  }
+ 
+  function lifePathNumber(date){
+    const digits = (date.getMonth()+1).toString() + date.getDate().toString() + date.getFullYear().toString();
+    let n = digits.split('').reduce((a,c) => a + Number(c), 0);
+    while(n > 9 && n !== 11 && n !== 22 && n !== 33){
+      n = String(n).split('').reduce((a,c) => a + Number(c), 0);
+    }
+    return n;
+  }
+ 
+  function chineseZodiac(year){
+    const animals = ["Monkey","Rooster","Dog","Pig","Rat","Ox","Tiger","Rabbit","Dragon","Snake","Horse","Goat"];
+    return animals[year % 12];
+  }
+ 
+  function render(){
+    const now = new Date();
+ 
+    const ak = ageParts(KHUSHI_BIRTH, now);
+    const am = ageParts(ME_BIRTH, now);
+ 
+    document.getElementById('ageKhushiBig').textContent = ak.y + ' years, ' + ak.m + ' mo, ' + ak.d + ' d old';
+    document.getElementById('ageKhushiTick').textContent = String(ak.h).padStart(2,'0') + ':' + String(ak.mi).padStart(2,'0') + ':' + String(ak.s).padStart(2,'0') + ' since last birthday';
+ 
+    document.getElementById('ageMeBig').textContent = am.y + ' years, ' + am.m + ' mo, ' + am.d + ' d old';
+    document.getElementById('ageMeTick').textContent = String(am.h).padStart(2,'0') + ':' + String(am.mi).padStart(2,'0') + ':' + String(am.s).padStart(2,'0') + ' since last birthday';
+ 
+    document.getElementById('combinedDays').textContent = (totalDays(KHUSHI_BIRTH, now) + totalDays(ME_BIRTH, now)).toLocaleString();
+ 
+    document.getElementById('moonKhushi').textContent = moonPhase(KHUSHI_BIRTH);
+    document.getElementById('moonMe').textContent = moonPhase(ME_BIRTH);
+ 
+    const zK = chineseZodiac(KHUSHI_BIRTH.getFullYear());
+    const zM = chineseZodiac(ME_BIRTH.getFullYear());
+    document.getElementById('chineseZodiac').textContent = zK === zM ? ('Both ' + zK + ' (2001)') : (zK + ' & ' + zM);
+ 
+    document.getElementById('lifePaths').textContent = lifePathNumber(KHUSHI_BIRTH) + ' & ' + lifePathNumber(ME_BIRTH);
+  }
+ 
+  render();
+  setInterval(render, 1000);
+})();
+ 
+/* =========================================================
+   NEURAL LOVE NETWORK — SVG WIRING
+   ========================================================= */
+(function neuralNet(){
+  const edgesLayer = document.getElementById('edgesLayer');
+  const inputLayer = document.getElementById('inputLayer');
+  const hiddenLayer = document.getElementById('hiddenLayer');
+  const netLog = document.getElementById('netLog');
+ 
+  const inputDefs = [
+    { key:'kind',  label:'kindness',  y: 30  },
+    { key:'humor', label:'humor',     y: 90  },
+    { key:'cute',  label:'cuteness',  y: 170 },
+    { key:'pat',   label:'patience',  y: 230 }
+  ];
+  const hiddenYs = [50, 130, 210];
+  const inputX = 60, hiddenX = 300, outputPos = {x:540, y:130};
+  const W = [[0.9,0.4,0.7,0.3],[0.5,0.8,0.6,0.6],[0.6,0.3,0.9,0.8]];
+ 
+  const inputCircles = [];
+  const edgeEls = [];
+ 
+  inputDefs.forEach((d)=>{
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', inputX); c.setAttribute('cy', d.y); c.setAttribute('r', 16);
+    c.setAttribute('fill', 'var(--virgo)'); c.setAttribute('fill-opacity','0.85');
+    inputLayer.appendChild(c);
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', inputX); t.setAttribute('y', d.y - 24);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('class','node-label');
+    t.textContent = d.label;
+    inputLayer.appendChild(t);
+    inputCircles.push(c);
+  });
+ 
+  const hiddenCircles = [];
+  hiddenYs.forEach((y,h)=>{
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', hiddenX); c.setAttribute('cy', y); c.setAttribute('r', 15);
+    c.setAttribute('fill', 'var(--scorpio)');
+    hiddenLayer.appendChild(c);
+    hiddenCircles.push(c);
+ 
+    inputDefs.forEach((d,i)=>{
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1', inputX); line.setAttribute('y1', d.y);
+      line.setAttribute('x2', hiddenX); line.setAttribute('y2', y);
+      line.setAttribute('stroke', 'var(--virgo)');
+      line.setAttribute('stroke-opacity', '0.25');
+      line.setAttribute('stroke-width', '1.4');
+      edgesLayer.appendChild(line);
+      edgeEls.push({ line, h, i });
+    });
+ 
+    const outLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+    outLine.setAttribute('x1', hiddenX); outLine.setAttribute('y1', y);
+    outLine.setAttribute('x2', outputPos.x); outLine.setAttribute('y2', outputPos.y);
+    outLine.setAttribute('stroke', 'var(--scorpio)');
+    outLine.setAttribute('stroke-opacity', '0.35');
+    outLine.setAttribute('stroke-width', '1.8');
+    edgesLayer.appendChild(outLine);
+  });
+ 
+  function sigmoid(x){ return 1/(1+Math.exp(-x)); }
+ 
+  const sliders = { kind: document.getElementById('s-kind'), humor: document.getElementById('s-humor'), cute: document.getElementById('s-cute'), pat: document.getElementById('s-pat') };
+  const outputs = { kind: document.getElementById('o-kind'), humor: document.getElementById('o-humor'), cute: document.getElementById('o-cute'), pat: document.getElementById('o-pat') };
+  const logLines = ["gradient: converging on 'yes'","loss: basically zero","confidence interval: forever ± 0","epoch complete — still yes","no overfitting, just us"];
+ 
+  function recompute(){
+    const vals = inputDefs.map(d => Number(sliders[d.key].value)/100);
+    inputDefs.forEach(d => outputs[d.key].textContent = sliders[d.key].value);
+ 
+    hiddenCircles.forEach((c, h) => {
+      let sum = 0;
+      for(let i=0;i<vals.length;i++) sum += W[h][i]*vals[i];
+      const act = sigmoid(sum*2 - 2);
+      c.setAttribute('r', 10 + act*10);
+      c.setAttribute('fill-opacity', 0.4 + act*0.6);
+    });
+ 
+    edgeEls.forEach(e=>{
+      const strength = vals[e.i]*W[e.h][e.i];
+      e.line.setAttribute('stroke-width', 0.8 + strength*3);
+      e.line.setAttribute('stroke-opacity', 0.15 + strength*0.5);
+    });
+ 
+    netLog.innerHTML = '&gt; model.predict(us) <b>== "yes, always"</b> — ' + logLines[Math.floor(Math.random()*logLines.length)];
+  }
+ 
+  Object.values(sliders).forEach(s => s.addEventListener('input', recompute));
+  recompute();
+})();
+ 
+/* =========================================================
+   MEMORY LOG
+   ========================================================= */
+(function memories(){
+  const listEl = document.getElementById('memoryList');
+  const addBtn = document.getElementById('addMemory');
+  const STORE_KEY = 'khushi_memories';
+  const defaults = [
+    { date: 'day one', text: 'The first conversation that turned into all the rest of them.' },
+    { date: 'a random tuesday', text: 'You laughed at something dumb I said and I decided I wanted to hear that laugh forever.' },
+    { date: 'that one trip', text: 'Still the best few days on record. Dataset of one, but a perfect one.' },
+    { date: 'today', text: 'Add your own memory below — this log is meant to keep growing.' }
+  ];
+  function load(){ try{ const raw = localStorage.getItem(STORE_KEY); if(raw) return JSON.parse(raw); }catch(e){} return defaults; }
+  function save(data){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }catch(e){} }
+  let data = load();
+ 
+  function render(){
+    listEl.innerHTML = '';
+    data.forEach((m, idx) => {
+      const row = document.createElement('div');
+      row.className = 'memory';
+      row.innerHTML =
+        '<div class="idx">#' + String(idx+1).padStart(3,'0') + '</div>' +
+        '<div class="body">' +
+          '<input class="mdate" value="' + m.date.replace(/"/g,'&quot;') + '" />' +
+          '<div contenteditable="true">' + m.text + '</div>' +
+        '</div>' +
+        '<button class="del" title="remove">✕</button>';
+      listEl.appendChild(row);
+      const dateInput = row.querySelector('.mdate');
+      const textDiv = row.querySelector('[contenteditable]');
+      const delBtn = row.querySelector('.del');
+      dateInput.addEventListener('input', () => { data[idx].date = dateInput.value; save(data); });
+      textDiv.addEventListener('input', () => { data[idx].text = textDiv.innerText; save(data); });
+      delBtn.addEventListener('click', () => { data.splice(idx,1); save(data); render(); });
+    });
+  }
+  addBtn.addEventListener('click', () => { data.push({ date: 'new entry', text: 'Click to write this memory...' }); save(data); render(); });
+  render();
+})();
+ 
+/* =========================================================
+   LOVE NOTE GENERATOR
+   ========================================================= */
+(function notes(){
+  const STORE_KEY = 'khushi_notes';
+  const display = document.getElementById('noteDisplay');
+  const runBtn = document.getElementById('runNote');
+  const addBtn = document.getElementById('addNote');
+  const input = document.getElementById('noteInput');
+  const defaults = [
+    "Some people quietly brighten every room they enter.",
+    "October souls are calm and observant.",
+    "Strength doesn't need to be loud to be real.",
+    "Certain people leave calm behind them, long after they've left the room.",
+    "Thoughtful presence is rarer than people think.",
+    "You made an ordinary year feel like it had a highlight reel."
+  ];
+  function load(){ try{ const raw = localStorage.getItem(STORE_KEY); if(raw) return JSON.parse(raw); }catch(e){} return defaults; }
+  function save(data){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }catch(e){} }
+  let notesData = load();
+  let lastIdx = -1;
+ 
+  function runInference(){
+    let idx;
+    do{ idx = Math.floor(Math.random()*notesData.length); } while(notesData.length > 1 && idx === lastIdx);
+    lastIdx = idx;
+    display.style.opacity = 0;
+    setTimeout(() => { display.textContent = '💭 "' + notesData[idx] + '"'; display.style.opacity = 1; }, 200);
+  }
+  runBtn.addEventListener('click', runInference);
+  addBtn.addEventListener('click', () => {
+    const v = input.value.trim(); if(!v) return;
+    notesData.push(v); save(notesData); input.value = '';
+    lastIdx = notesData.length - 1;
+    display.textContent = '💭 "' + v + '"';
+  });
+  input.addEventListener('keydown', e => { if(e.key === 'Enter') addBtn.click(); });
+})();
+ 
+/* =========================================================
+   QUIZ
+   ========================================================= */
+(function quiz(){
+  const card = document.getElementById('quizCard');
+  const questions = [
+    { q: "What's the fastest way to make her laugh?", opts: ["A terrible pun", "A meme at 2am", "Impression of a mutual friend", "All of the above, unfortunately"], correct: 3 },
+    { q: "Her go-to comfort order is closest to:", opts: ["Something sweet", "Something spicy", "Whatever I'm having", "Depends entirely on the day"], correct: 3 },
+    { q: "The best way to win an argument with her is:", opts: ["Facts and logic", "Just agree, it's faster", "Bring snacks", "You don't 'win' — you just apologize well"], correct: 3 }
+  ];
+  let answered = new Array(questions.length).fill(false);
+  let score = 0;
+ 
+  function render(){
+    card.innerHTML = '';
+    questions.forEach((item, qi) => {
+      const block = document.createElement('div');
+      block.className = 'quiz-q';
+      block.innerHTML = '<p>' + (qi+1) + '. ' + item.q + '</p>';
+      const opts = document.createElement('div');
+      opts.className = 'quiz-opts';
+      item.opts.forEach((opt, oi) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'quiz-opt'; b.textContent = opt;
+        b.addEventListener('click', () => {
+          if(answered[qi]) return;
+          answered[qi] = true;
+          const buttons = opts.querySelectorAll('.quiz-opt');
+          buttons.forEach((btn, i) => { if(i === item.correct) btn.classList.add('correct'); else btn.classList.add('wrong'); });
+          if(oi === item.correct) score++;
+          if(answered.every(Boolean)) showResult();
+        });
+        opts.appendChild(b);
+      });
+      block.appendChild(opts);
+      card.appendChild(block);
+    });
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'quiz-result'; resultDiv.id = 'quizResult';
+    card.appendChild(resultDiv);
+  }
+  function showResult(){
+    const r = document.getElementById('quizResult');
+    const pct = Math.round((score/questions.length)*100);
+    let msg;
+    if(pct === 100) msg = "&gt; accuracy: 100% — model has clearly done its research.";
+    else if(pct >= 50) msg = "&gt; accuracy: " + pct + "% — decent, but there's homework to do.";
+    else msg = "&gt; accuracy: " + pct + "% — time to pay more attention. 😅";
+    r.innerHTML = msg;
+  }
+  render();
+})();
+ 
+/* =========================================================
+   SECRET UNLOCK
+   ========================================================= */
+(function secret(){
+  const SECRET_CODE = "Chudail";
+  const input = document.getElementById('secretInput');
+  const btn = document.getElementById('secretBtn');
+  const reveal = document.getElementById('secretReveal');
+  const card = document.querySelector('.secret-card');
+  const message = "If you're reading this, it means the code still gets you — same as it always does. " +
+    "Happy birthday to the person who made an ordinary calendar date feel like the most important day of the year. " +
+    "Here's to every birthday after this one, too.";
+  function tryUnlock(){
+    const val = input.value.trim().toUpperCase();
+    if(val === SECRET_CODE){
+      reveal.textContent = message; reveal.classList.add('show');
+      launchBurst(3500); btn.disabled = true; input.disabled = true;
+    } else {
+      card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    }
+  }
+  btn.addEventListener('click', tryUnlock);
+  input.addEventListener('keydown', e => { if(e.key === 'Enter') tryUnlock(); });
+})();
 </script>
-
 </body>
+
 </html>
