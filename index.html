@@ -523,31 +523,49 @@ function launchBurst(duration){
 /* =========================================================
    COUNTDOWN (IST, Oct 27)
    ========================================================= */
+/* =========================================================
+   COUNTDOWN — target: Oct 27, 12:00 AM IST (fixed instant)
+   ========================================================= */
 (function countdown(){
-  const IST_OFFSET_MIN = 330;
-  function nowIST(){
-    const now = new Date();
-    const utcMs = now.getTime() + now.getTimezoneOffset()*60000;
-    return new Date(utcMs + IST_OFFSET_MIN*60000);
+  const IST_OFFSET_MS = 330 * 60 * 1000;   // UTC+5:30
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  let burstDone = false;
+
+  // Oct 27 00:00 IST for a given year, as a real UTC timestamp
+  function birthdayStart(year){
+    return Date.UTC(year, 9, 27, 0, 0, 0) - IST_OFFSET_MS;
   }
+
   function tick(){
-    const istNow = nowIST();
-    const y = istNow.getFullYear();
-    let target = new Date(Date.UTC(y, 9, 26, 18, 30, 0)); // Oct 27 00:00 IST
-    const istTarget = new Date(target.getTime() + IST_OFFSET_MIN*60000);
-    if(istNow.getTime() > istTarget.getTime()) target = new Date(Date.UTC(y+1, 9, 26, 18, 30, 0));
-    const diff = target.getTime() - (istNow.getTime() - IST_OFFSET_MIN*60000);
-    const d = Math.max(0, Math.floor(diff/(1000*60*60*24)));
-    const h = Math.max(0, Math.floor((diff/(1000*60*60))%24));
-    const m = Math.max(0, Math.floor((diff/(1000*60))%60));
-    const s = Math.max(0, Math.floor((diff/1000)%60));
-    document.getElementById('days').textContent = String(d).padStart(2,'0');
-    document.getElementById('hours').textContent = String(h).padStart(2,'0');
+    const now = Date.now();
+    // What year is it right now in IST?
+    const istYear = new Date(now + IST_OFFSET_MS).getUTCFullYear();
+
+    let start = birthdayStart(istYear);
+    const isBirthday = now >= start && now < start + DAY_MS;
+
+    // Birthday already over this year → count to next year's
+    if(now >= start + DAY_MS) start = birthdayStart(istYear + 1);
+
+    const diff = isBirthday ? 0 : Math.max(0, start - now);
+
+    const d = Math.floor(diff / DAY_MS);
+    const h = Math.floor((diff / 3600000) % 24);
+    const m = Math.floor((diff / 60000) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+
+    document.getElementById('days').textContent    = String(d).padStart(2,'0');
+    document.getElementById('hours').textContent   = String(h).padStart(2,'0');
     document.getElementById('minutes').textContent = String(m).padStart(2,'0');
     document.getElementById('seconds').textContent = String(s).padStart(2,'0');
-    if(diff <= 0) launchBurst(4000);
+
+    // Confetti once on the birthday, not every second
+    if(isBirthday && !burstDone){ burstDone = true; launchBurst(4000); }
+    if(!isBirthday) burstDone = false;
   }
-  tick(); setInterval(tick, 1000);
+
+  tick();
+  setInterval(tick, 1000);
 })();
  
 /* =========================================================
